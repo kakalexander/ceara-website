@@ -1,0 +1,22 @@
+node_modules
+.next
+out
+dist
+coverage
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.log
+tmp
+public/uploads/*
+!public/uploads/.gitkeep
+
+# esteira-v3 (gerenciado automaticamente — não editar este bloco)
+.claude/
+.mcp.json
+.code-review-graph/
+.claude.bak.*
+.esteira-tmp/
+.esteira-gitlab.json

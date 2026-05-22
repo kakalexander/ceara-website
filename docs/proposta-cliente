@@ -1,0 +1,15 @@
+Descrição do Projeto 
+Desenvolvimento de site institucional com catálogo de produtoo, permitindo que o próprio cliente 
+gerencie os produtos, imagens e preços. 
+Páginas Incluídas 
+• Home 
+• Produtos 
+• Quem Somos 
+• Contato 
+Funcionalidades 
+• Cadastro de produtos com imagem, descrição e preço 
+• Possibilidade de preço promocional 
+• Painel administrativo para o cliente gerenciar produtos, descontos, promoções etc 
+• Carrinho de produtos 
+• Finalização via WhatsApp com mensagem automática contendo os itens 
+• Layout responsivo (celular e computador) 
