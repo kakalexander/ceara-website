@@ -2,6 +2,22 @@
 
 import { useEffect, useState } from "react";
 
+function extractGaId(raw: string): string {
+  const match = raw.match(/['"]?(G-[A-Z0-9]+)['"]?/i);
+  return match ? match[1].toUpperCase() : raw.trim();
+}
+
+function extractPixelId(raw: string): string {
+  const match = raw.match(/fbq\s*\(\s*['"]init['"]\s*,\s*['"]?(\d{10,20})['"]?/)
+    ?? raw.match(/\b(\d{10,20})\b/);
+  return match ? match[1] : raw.trim();
+}
+
+function extractSearchConsole(raw: string): string {
+  const match = raw.match(/content=['"]([\w-]+)['"]/i);
+  return match ? match[1] : raw.trim();
+}
+
 type Settings = {
   ga_measurement_id?: string;
   meta_pixel_id?: string;
@@ -107,16 +123,21 @@ export default function AnalysePage(): JSX.Element {
           O ID tem formato <code style={{ fontFamily: "monospace", color: "var(--text-soft)" }}>G-XXXXXXXXXX</code>.
         </p>
 
-        <div className="field field--simple" style={{ maxWidth: 400 }}>
-          <label htmlFor="ga-id">Measurement ID</label>
-          <input
+        <div className="field field--simple" style={{ maxWidth: 500 }}>
+          <label htmlFor="ga-id">ID ou tag HTML do Google Analytics</label>
+          <textarea
             id="ga-id"
-            type="text"
-            placeholder="G-XXXXXXXXXX"
+            rows={2}
+            placeholder={"G-XXXXXXXXXX  ou cole a tag <script> completa"}
             value={gaId}
             onChange={(e) => setGaId(e.target.value)}
+            onBlur={(e) => setGaId(extractGaId(e.target.value))}
             spellCheck={false}
+            style={{ fontFamily: "monospace", fontSize: "0.88rem", resize: "vertical" }}
           />
+          <small style={{ color: "var(--text-mute)" }}>
+            Cole o ID (G-...) ou a tag &lt;script&gt; completa — o ID será extraído automaticamente.
+          </small>
         </div>
 
         <div
@@ -157,16 +178,21 @@ export default function AnalysePage(): JSX.Element {
           O Pixel ID é um número com ~15 dígitos.
         </p>
 
-        <div className="field field--simple" style={{ maxWidth: 400 }}>
-          <label htmlFor="pixel-id">Pixel ID</label>
-          <input
+        <div className="field field--simple" style={{ maxWidth: 500 }}>
+          <label htmlFor="pixel-id">ID ou tag HTML do Meta Pixel</label>
+          <textarea
             id="pixel-id"
-            type="text"
-            placeholder="Ex: 123456789012345"
+            rows={2}
+            placeholder={"123456789012345  ou cole o código fbq('init',...) completo"}
             value={pixelId}
             onChange={(e) => setPixelId(e.target.value)}
+            onBlur={(e) => setPixelId(extractPixelId(e.target.value))}
             spellCheck={false}
+            style={{ fontFamily: "monospace", fontSize: "0.88rem", resize: "vertical" }}
           />
+          <small style={{ color: "var(--text-mute)" }}>
+            Cole o ID numérico ou o bloco fbq completo — o ID será extraído automaticamente.
+          </small>
         </div>
 
         <div
@@ -206,15 +232,20 @@ export default function AnalysePage(): JSX.Element {
         </p>
 
         <div className="field field--simple" style={{ maxWidth: 500, marginBottom: 14 }}>
-          <label htmlFor="gsc-tag">Código de verificação HTML</label>
-          <input
+          <label htmlFor="gsc-tag">Código de verificação ou tag HTML</label>
+          <textarea
             id="gsc-tag"
-            type="text"
-            placeholder="Ex: abc123xyz456..."
+            rows={2}
+            placeholder={'abc123xyz...  ou cole a <meta name="google-site-verification" ...> completa'}
             value={searchConsoleTag}
             onChange={(e) => setSearchConsoleTag(e.target.value)}
+            onBlur={(e) => setSearchConsoleTag(extractSearchConsole(e.target.value))}
             spellCheck={false}
+            style={{ fontFamily: "monospace", fontSize: "0.88rem", resize: "vertical" }}
           />
+          <small style={{ color: "var(--text-mute)" }}>
+            Cole a meta tag completa ou apenas o valor do atributo content — será extraído automaticamente.
+          </small>
         </div>
 
         <div style={{ padding: "12px 16px", background: "rgba(255,255,255,0.03)", borderRadius: 8, border: "1px solid var(--line-soft)", fontSize: "0.85rem", color: "var(--text-soft)", lineHeight: 1.6 }}>

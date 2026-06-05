@@ -1,8 +1,9 @@
 import bcrypt from "bcryptjs";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 import { prisma } from "@/lib/prisma";
+import { checkRateLimit, clearRateLimit } from "@/lib/rate-limit";
 import { createSessionToken, getSessionCookieName } from "@/lib/session";
 
 const loginSchema = z.object({
@@ -10,7 +11,18 @@ const loginSchema = z.object({
   password: z.string().min(8)
 });
 
-export async function POST(request: Request): Promise<NextResponse> {
+export async function POST(request: NextRequest): Promise<NextResponse> {
+  const ip = request.headers.get("x-forwarded-for")?.split(",")[0].trim()
+    ?? request.headers.get("x-real-ip")
+    ?? "unknown";
+  const rl = checkRateLimit(`login:${ip}`);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: `Muitas tentativas. Aguarde ${Math.ceil(rl.resetIn / 60000)} minutos.` },
+      { status: 429 }
+    );
+  }
+
   const body = await request.json().catch(() => null);
   const parsed = loginSchema.safeParse(body);
 
@@ -37,6 +49,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     role: user.role
   });
 
+  clearRateLimit(`login:${ip}`);
   const response = NextResponse.json({ success: true });
   response.cookies.set(getSessionCookieName(), token, {
     httpOnly: true,

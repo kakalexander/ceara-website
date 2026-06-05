@@ -75,34 +75,36 @@ export async function POST(request: Request): Promise<NextResponse> {
     return NextResponse.json({ error: "Ja existe produto com esse nome." }, { status: 409 });
   }
 
-  const created = await prisma.product.create({
-    data: {
-      categoryId: parsed.data.categoryId,
-      name: parsed.data.name,
-      slug,
-      shortDescription: parsed.data.shortDescription ?? null,
-      description: parsed.data.description,
-      price: new Prisma.Decimal(parsed.data.price),
-      promoPrice:
-        parsed.data.promoPrice == null ? null : new Prisma.Decimal(parsed.data.promoPrice),
-      sku: parsed.data.sku ?? null,
-      brand: parsed.data.brand ?? null,
-      imageMain: parsed.data.imageMain,
-      isActive: parsed.data.isActive,
-      isFeatured: parsed.data.isFeatured
-    },
-    include: { category: true, images: { orderBy: { sortOrder: "asc" } } }
-  });
+  const productData = {
+    categoryId: parsed.data.categoryId,
+    name: parsed.data.name,
+    slug,
+    shortDescription: parsed.data.shortDescription ?? null,
+    description: parsed.data.description,
+    price: new Prisma.Decimal(parsed.data.price),
+    promoPrice: parsed.data.promoPrice == null ? null : new Prisma.Decimal(parsed.data.promoPrice),
+    sku: parsed.data.sku ?? null,
+    brand: parsed.data.brand ?? null,
+    imageMain: parsed.data.imageMain,
+    isActive: parsed.data.isActive,
+    isFeatured: parsed.data.isFeatured
+  };
 
-  if (parsed.data.extraImages.length > 0) {
-    await prisma.productImage.createMany({
-      data: parsed.data.extraImages.map((imagePath, i) => ({
-        productId: created.id,
-        imagePath,
-        sortOrder: i + 1
-      }))
+  const extraImageData = parsed.data.extraImages.map((imagePath, i) => ({
+    imagePath,
+    sortOrder: i + 1
+  }));
+
+  const [created] = await prisma.$transaction(async (tx) => {
+    const product = await tx.product.create({
+      data: {
+        ...productData,
+        ...(extraImageData.length > 0 ? { images: { createMany: { data: extraImageData } } } : {})
+      },
+      include: { category: true, images: { orderBy: { sortOrder: "asc" } } }
     });
-  }
+    return [product];
+  });
 
   return NextResponse.json(
     {

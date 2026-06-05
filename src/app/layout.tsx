@@ -23,17 +23,26 @@ const bodyFont = Inter({
   display: "swap"
 });
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+const OG_IMAGE = `${SITE_URL}/og-default.jpg`;
+
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSiteSettings();
   return {
-    title: "Ceará Auto Elétrica e Bateria — Peças e serviços para linha pesada",
+    metadataBase: new URL(SITE_URL),
+    title: {
+      default: "Ceará Auto Elétrica e Bateria — Peças e serviços para linha pesada",
+      template: "%s | Ceará Auto Elétrica e Bateria"
+    },
     description:
       "Especialistas em sistemas Arla-Euro 5 e 6. Peças, baterias e auto elétrica para caminhão com atendimento técnico rápido em Goiás.",
+    alternates: { canonical: "/" },
     openGraph: {
       title: "Ceará Auto Elétrica e Bateria",
       description: "Peças e serviços técnicos para caminhão. Atendimento via WhatsApp.",
       type: "website",
-      locale: "pt_BR"
+      locale: "pt_BR",
+      images: [{ url: OG_IMAGE, width: 1200, height: 630, alt: "Ceará Auto Elétrica e Bateria" }]
     },
     verification: settings.google_site_verification
       ? { google: settings.google_site_verification }
@@ -50,6 +59,25 @@ export default async function RootLayout({
   const gaId = settings.ga_measurement_id;
   const pixelId = settings.meta_pixel_id;
 
+  const orgJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "AutoPartsStore",
+    name: "Ceará Auto Elétrica e Bateria",
+    url: SITE_URL,
+    telephone: settings.whatsapp_primary ? `+${settings.whatsapp_primary}` : undefined,
+    address: settings.address ? {
+      "@type": "PostalAddress",
+      streetAddress: settings.address,
+      addressCountry: "BR"
+    } : undefined,
+    openingHours: [
+      settings.business_hours_weekdays,
+      settings.business_hours_saturday,
+      settings.business_hours_sunday
+    ].filter(Boolean),
+    sameAs: [settings.instagram_url, settings.facebook_url].filter((v) => v && v !== "#")
+  };
+
   return (
     <html lang="pt-BR" className={`${brandFont.variable} ${bodyFont.variable}`}>
       <body>
@@ -59,6 +87,10 @@ export default async function RootLayout({
             <RevealInit />
           </CartProvider>
         </SettingsProvider>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
+        />
 
         {gaId && (
           <>

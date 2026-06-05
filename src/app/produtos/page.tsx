@@ -7,9 +7,10 @@ import { listActiveCategories } from "@/lib/categories";
 import { listActiveProducts } from "@/lib/products";
 
 export const metadata: Metadata = {
-  title: "Produtos | Ceará Auto Elétrica e Bateria",
+  title: "Produtos",
   description:
-    "Catálogo de peças, baterias, sensores e auto elétrica para linha pesada. Adicione ao carrinho e finalize pelo WhatsApp."
+    "Catálogo de peças, baterias, sensores e auto elétrica para linha pesada. Adicione ao carrinho e finalize pelo WhatsApp.",
+  alternates: { canonical: "/produtos" }
 };
 
 export const revalidate = 60;

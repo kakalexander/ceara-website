@@ -27,16 +27,18 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
   const description = (product.shortDescription ?? product.description).slice(0, 155);
+  const hasImage = product.imageMain && product.imageMain !== "/placeholder-product.svg";
 
   return {
-    title: `${product.name} | Ceará Auto Elétrica e Bateria`,
+    title: product.name,
     description,
+    alternates: { canonical: `/produtos/${product.slug}` },
     openGraph: {
       title: product.name,
       description,
       type: "website",
-      ...(product.imageMain !== "/placeholder-product.svg" && {
-        images: [{ url: `${siteUrl}${product.imageMain}`, alt: product.name }]
+      ...(hasImage && {
+        images: [{ url: `${siteUrl}${product.imageMain}`, width: 800, height: 800, alt: product.name }]
       })
     }
   };
@@ -59,12 +61,45 @@ export default async function ProductPage({ params }: { params: Params }): Promi
   ].filter((img) => img && img !== "/placeholder-product.svg");
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+
+  const productJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.name,
+    description: product.shortDescription ?? product.description,
+    sku: product.sku ?? undefined,
+    brand: product.brand ? { "@type": "Brand", name: product.brand } : undefined,
+    image: product.imageMain && product.imageMain !== "/placeholder-product.svg"
+      ? `${siteUrl}${product.imageMain}`
+      : undefined,
+    offers: {
+      "@type": "Offer",
+      price: displayPrice.toFixed(2),
+      priceCurrency: "BRL",
+      availability: "https://schema.org/InStock",
+      url: `${siteUrl}/produtos/${product.slug}`
+    }
+  };
+
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Início", item: siteUrl },
+      { "@type": "ListItem", position: 2, name: "Produtos", item: `${siteUrl}/produtos` },
+      ...(product.category ? [{ "@type": "ListItem", position: 3, name: product.category.name }] : []),
+      { "@type": "ListItem", position: product.category ? 4 : 3, name: product.name, item: `${siteUrl}/produtos/${product.slug}` }
+    ]
+  };
+
   const wppMsg = encodeURIComponent(
     `Olá! Vim pelo site e tenho interesse no produto:\n*${product.name}*\nPreço: ${formatCurrency(displayPrice)}\n${siteUrl}/produtos/${product.slug}\n\nGostaria de mais informações.`
   );
 
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
       <section className="page-hero" style={{ paddingBottom: "1.5rem" }}>
         <div className="floating-dots" />
         <div className="container" style={{ position: "relative", zIndex: 1 }}>
