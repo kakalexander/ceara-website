@@ -23,17 +23,23 @@ const bodyFont = Inter({
   display: "swap"
 });
 
-export const metadata: Metadata = {
-  title: "Ceará Auto Elétrica e Bateria — Peças e serviços para linha pesada",
-  description:
-    "Especialistas em sistemas Arla-Euro 5 e 6. Peças, baterias e auto elétrica para caminhão com atendimento técnico rápido em Goiás.",
-  openGraph: {
-    title: "Ceará Auto Elétrica e Bateria",
-    description: "Peças e serviços técnicos para caminhão. Atendimento via WhatsApp.",
-    type: "website",
-    locale: "pt_BR"
-  }
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSiteSettings();
+  return {
+    title: "Ceará Auto Elétrica e Bateria — Peças e serviços para linha pesada",
+    description:
+      "Especialistas em sistemas Arla-Euro 5 e 6. Peças, baterias e auto elétrica para caminhão com atendimento técnico rápido em Goiás.",
+    openGraph: {
+      title: "Ceará Auto Elétrica e Bateria",
+      description: "Peças e serviços técnicos para caminhão. Atendimento via WhatsApp.",
+      type: "website",
+      locale: "pt_BR"
+    },
+    verification: settings.google_site_verification
+      ? { google: settings.google_site_verification }
+      : undefined
+  };
+}
 
 export default async function RootLayout({
   children
@@ -46,11 +52,6 @@ export default async function RootLayout({
 
   return (
     <html lang="pt-BR" className={`${brandFont.variable} ${bodyFont.variable}`}>
-      <head>
-        {settings.google_site_verification && (
-          <meta name="google-site-verification" content={settings.google_site_verification} />
-        )}
-      </head>
       <body>
         <SettingsProvider settings={settings}>
           <CartProvider>
