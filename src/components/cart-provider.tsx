@@ -11,7 +11,7 @@ type CartContextValue = {
   count: number;
   total: number;
   isOpen: boolean;
-  add: (product: Pick<ProductCard, "id" | "name" | "price" | "promoPrice">) => void;
+  add: (product: Pick<ProductCard, "id" | "name" | "price" | "promoPrice" | "imageMain">) => void;
   remove: (productId: number) => void;
   setQty: (productId: number, qty: number) => void;
   clear: () => void;
@@ -65,6 +65,7 @@ export function CartProvider({ children }: { children: React.ReactNode }): JSX.E
           name: product.name,
           price: product.price,
           promoPrice: product.promoPrice,
+          imageMain: product.imageMain,
           quantity: 1
         }
       ];

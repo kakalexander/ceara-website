@@ -54,13 +54,19 @@ export function CartDrawer(): JSX.Element {
           ) : (
             items.map((it) => {
               const unit = unitPrice(it);
+              const hasImage = it.imageMain && it.imageMain !== "/placeholder-product.svg";
               return (
                 <div key={it.id} className="cart-item">
                   <div className="cart-item-thumb">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                      <path d="M3 7l9-4 9 4-9 4-9-4z" />
-                      <path d="M3 7v10l9 4 9-4V7" />
-                    </svg>
+                    {hasImage ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={it.imageMain} alt={it.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    ) : (
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                        <path d="M3 7l9-4 9 4-9 4-9-4z" />
+                        <path d="M3 7v10l9 4 9-4V7" />
+                      </svg>
+                    )}
                   </div>
                   <div className="cart-item-info">
                     <strong>{it.name}</strong>

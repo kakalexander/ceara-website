@@ -4,15 +4,19 @@ import { FormEvent, useEffect, useState } from "react";
 
 type Category = { id: number; name: string; slug: string; isActive: boolean };
 type DeleteModal = { categoryId: number; categoryName: string; productCount: number };
+type ConfirmModal = { categoryId: number; categoryName: string };
 
 export default function AdminCategoriesPage(): JSX.Element {
   const [categories, setCategories] = useState<Category[]>([]);
   const [name, setName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [confirmModal, setConfirmModal] = useState<ConfirmModal | null>(null);
   const [deleteModal, setDeleteModal] = useState<DeleteModal | null>(null);
   const [moveTo, setMoveTo] = useState<number>(0);
   const [deleting, setDeleting] = useState(false);
+
+  const anyModal = !!confirmModal || !!deleteModal;
 
   async function loadCategories(): Promise<void> {
     const response = await fetch("/api/admin/categories", { cache: "no-store" });
@@ -29,12 +33,21 @@ export default function AdminCategoriesPage(): JSX.Element {
   }, []);
 
   useEffect(() => {
-    if (!deleteModal) return;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = "";
+    document.body.style.overflow = anyModal ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [anyModal]);
+
+  useEffect(() => {
+    if (!anyModal) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setConfirmModal(null);
+        setDeleteModal(null);
+      }
     };
-  }, [deleteModal]);
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [anyModal]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault();
@@ -59,12 +72,19 @@ export default function AdminCategoriesPage(): JSX.Element {
     await loadCategories();
   }
 
-  async function handleDeleteClick(c: Category): Promise<void> {
-    if (!window.confirm("Tem certeza que deseja excluir a categoria \"" + c.name + "\"?")) return;
+  function handleDeleteClick(c: Category): void {
+    setConfirmModal({ categoryId: c.id, categoryName: c.name });
+  }
 
-    const res = await fetch("/api/admin/categories/" + c.id, { method: "DELETE" });
+  async function handleSimpleDeleteConfirm(): Promise<void> {
+    if (!confirmModal) return;
+    setDeleting(true);
+
+    const res = await fetch("/api/admin/categories/" + confirmModal.categoryId, { method: "DELETE" });
+    setDeleting(false);
 
     if (res.ok) {
+      setConfirmModal(null);
       await loadCategories();
       return;
     }
@@ -72,19 +92,20 @@ export default function AdminCategoriesPage(): JSX.Element {
     const payload = (await res.json().catch(() => null)) as {
       error?: string;
       productCount?: number;
-      message?: string;
     } | null;
 
     if (res.status === 409 && payload?.error === "categoria_has_products") {
-      const others = categories.filter((cat) => cat.id !== c.id);
+      const others = categories.filter((cat) => cat.id !== confirmModal.categoryId);
+      setConfirmModal(null);
       setDeleteModal({
-        categoryId: c.id,
-        categoryName: c.name,
+        categoryId: confirmModal.categoryId,
+        categoryName: confirmModal.categoryName,
         productCount: payload.productCount ?? 0
       });
       setMoveTo(others[0]?.id ?? 0);
     } else {
       setError(payload?.error ?? "Erro ao excluir categoria.");
+      setConfirmModal(null);
     }
   }
 
@@ -236,15 +257,78 @@ export default function AdminCategoriesPage(): JSX.Element {
         )}
       </div>
 
+      {/* Modal: confirmação simples */}
+      {confirmModal && (
+        <div
+          className="modal-backdrop"
+          role="dialog"
+          aria-modal="true"
+          onClick={(e) => { if (e.target === e.currentTarget) setConfirmModal(null); }}
+        >
+          <div className="modal" style={{ maxWidth: 480 }}>
+            <div className="modal-header">
+              <h2 className="modal-title">Excluir categoria</h2>
+              <button
+                className="modal-close"
+                onClick={() => setConfirmModal(null)}
+                type="button"
+                aria-label="Fechar"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <path d="M18 6L6 18M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="modal-body">
+              <p style={{ marginBottom: 20, lineHeight: 1.6 }}>
+                Tem certeza que deseja excluir a categoria{" "}
+                <strong>&ldquo;{confirmModal.categoryName}&rdquo;</strong>?{" "}
+                Esta ação não pode ser desfeita.
+              </p>
+              <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+                <button
+                  className="btn"
+                  style={{ background: "var(--danger)", borderColor: "var(--danger)" }}
+                  onClick={handleSimpleDeleteConfirm}
+                  disabled={deleting}
+                  type="button"
+                >
+                  {deleting ? "Excluindo..." : "Sim, excluir categoria"}
+                </button>
+                <button
+                  className="btn btn--ghost"
+                  onClick={() => setConfirmModal(null)}
+                  type="button"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: categoria com produtos vinculados */}
       {deleteModal && (
         <div
           className="modal-backdrop"
           role="dialog"
           aria-modal="true"
+          onClick={(e) => { if (e.target === e.currentTarget) setDeleteModal(null); }}
         >
           <div className="modal" style={{ maxWidth: 500 }}>
             <div className="modal-header">
-              <h2 className="modal-title">Excluir categoria</h2>
+              <h2 className="modal-title">Categoria com produtos vinculados</h2>
+              <button
+                className="modal-close"
+                onClick={() => setDeleteModal(null)}
+                type="button"
+                aria-label="Fechar"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <path d="M18 6L6 18M6 6l12 12" />
+                </svg>
+              </button>
             </div>
             <div className="modal-body">
               <p style={{ marginBottom: 14 }}>
@@ -292,7 +376,7 @@ export default function AdminCategoriesPage(): JSX.Element {
               <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
                 <button
                   className="btn"
-                  style={{ background: "var(--danger)" }}
+                  style={{ background: "var(--danger)", borderColor: "var(--danger)" }}
                   onClick={handleDeleteConfirm}
                   disabled={deleting || otherCategories.length === 0}
                   type="button"

@@ -35,6 +35,32 @@ function validatePromoPrice(price: number, promoPrice?: number | null): string |
   return null;
 }
 
+export async function GET(
+  _request: Request,
+  { params }: { params: { id: string } }
+): Promise<NextResponse> {
+  const session = await getAdminSession();
+  if (!session) {
+    return NextResponse.json({ error: "Nao autorizado." }, { status: 401 });
+  }
+  const productId = parseProductId(params.id);
+  if (!productId) {
+    return NextResponse.json({ error: "Id de produto invalido." }, { status: 400 });
+  }
+  const product = await prisma.product.findUnique({
+    where: { id: productId },
+    include: { category: true, images: { orderBy: { sortOrder: "asc" } } }
+  });
+  if (!product) {
+    return NextResponse.json({ error: "Produto nao encontrado." }, { status: 404 });
+  }
+  return NextResponse.json({
+    ...product,
+    price: Number(product.price),
+    promoPrice: product.promoPrice ? Number(product.promoPrice) : null
+  });
+}
+
 export async function PUT(
   request: Request,
   { params }: { params: { id: string } }

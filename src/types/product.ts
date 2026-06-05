@@ -16,5 +16,6 @@ export type CartItem = {
   name: string;
   price: number;
   promoPrice: number | null;
+  imageMain: string;
   quantity: number;
 };

@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const SESSION_COOKIE_NAME = "ceara_admin_session";
+import { getSessionCookieName, verifySessionToken } from "@/lib/session";
 
-export function middleware(request: NextRequest): NextResponse {
+export async function middleware(request: NextRequest): Promise<NextResponse> {
   const { pathname } = request.nextUrl;
   const isAdminArea = pathname.startsWith("/admin");
   const isLoginPage = pathname === "/admin/login";
@@ -12,10 +12,18 @@ export function middleware(request: NextRequest): NextResponse {
     return NextResponse.next();
   }
 
-  const token = request.cookies.get(SESSION_COOKIE_NAME)?.value;
+  const token = request.cookies.get(getSessionCookieName())?.value;
   if (!token) {
     const loginUrl = new URL("/admin/login", request.url);
     return NextResponse.redirect(loginUrl);
+  }
+
+  const verified = await verifySessionToken(token);
+  if (!verified) {
+    const loginUrl = new URL("/admin/login", request.url);
+    const response = NextResponse.redirect(loginUrl);
+    response.cookies.delete(getSessionCookieName());
+    return response;
   }
 
   return NextResponse.next();
