@@ -1,5 +1,9 @@
+"use client";
+
+import { useSettings } from "@/components/settings-context";
+
 export function WhatsAppSticky(): JSX.Element {
-  const whatsapp = process.env.NEXT_PUBLIC_WHATSAPP_PRIMARY ?? "5562992002643";
+  const { whatsapp_primary: whatsapp } = useSettings();
   return (
     <a
       className="wpp-sticky"

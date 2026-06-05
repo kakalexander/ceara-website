@@ -1,6 +1,7 @@
 "use client";
 
 import { unitPrice, useCart } from "@/components/cart-provider";
+import { useSettings } from "@/components/settings-context";
 import { formatCurrency } from "@/lib/currency";
 
 function buildWhatsAppMessage(items: ReturnType<typeof useCart>["items"]): string {
@@ -18,7 +19,7 @@ function buildWhatsAppMessage(items: ReturnType<typeof useCart>["items"]): strin
 
 export function CartDrawer(): JSX.Element {
   const { items, total, isOpen, close, setQty, remove } = useCart();
-  const whatsapp = process.env.NEXT_PUBLIC_WHATSAPP_PRIMARY ?? "5562992002643";
+  const { whatsapp_primary: whatsapp } = useSettings();
 
   function handleCheckout(): void {
     if (!items.length) return;

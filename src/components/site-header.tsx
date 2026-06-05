@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { BrandLogo } from "@/components/brand-logo";
 import { CartButton } from "@/components/cart-button";
 import { MobileMenu } from "@/components/mobile-menu";
+import { useSettings } from "@/components/settings-context";
 
 const navLinks = [
   { href: "/", label: "Início" },
@@ -16,7 +17,7 @@ const navLinks = [
 
 export function SiteHeader(): JSX.Element {
   const pathname = usePathname();
-  const whatsapp = process.env.NEXT_PUBLIC_WHATSAPP_PRIMARY ?? "5562992002643";
+  const { whatsapp_primary: whatsapp } = useSettings();
 
   return (
     <header className="site-header">

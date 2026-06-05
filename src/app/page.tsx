@@ -3,12 +3,15 @@ import Link from "next/link";
 import { Counter } from "@/components/counter";
 import { MarqueeBar } from "@/components/marquee-bar";
 import { ProductCardItem } from "@/components/product-card-item";
+import { getSiteSettings } from "@/lib/site-settings";
 import { listActiveProducts } from "@/lib/products";
 
+export const revalidate = 60;
+
 export default async function HomePage(): Promise<JSX.Element> {
-  const products = await listActiveProducts();
+  const [products, settings] = await Promise.all([listActiveProducts(), getSiteSettings()]);
   const featured = products.slice(0, 4);
-  const whatsapp = process.env.NEXT_PUBLIC_WHATSAPP_PRIMARY ?? "5562992002643";
+  const whatsapp = settings.whatsapp_primary;
 
   return (
     <>

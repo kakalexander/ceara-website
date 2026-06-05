@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { ProductCatalog } from "@/components/product-catalog";
+import { getSiteSettings } from "@/lib/site-settings";
 import { listActiveCategories } from "@/lib/categories";
 import { listActiveProducts } from "@/lib/products";
 
@@ -11,9 +12,15 @@ export const metadata: Metadata = {
     "Catálogo de peças, baterias, sensores e auto elétrica para linha pesada. Adicione ao carrinho e finalize pelo WhatsApp."
 };
 
+export const revalidate = 60;
+
 export default async function ProductsPage(): Promise<JSX.Element> {
-  const [products, categories] = await Promise.all([listActiveProducts(), listActiveCategories()]);
-  const whatsapp = process.env.NEXT_PUBLIC_WHATSAPP_PRIMARY ?? "5562992002643";
+  const [products, categories, settings] = await Promise.all([
+    listActiveProducts(),
+    listActiveCategories(),
+    getSiteSettings()
+  ]);
+  const whatsapp = settings.whatsapp_primary;
 
   return (
     <>
