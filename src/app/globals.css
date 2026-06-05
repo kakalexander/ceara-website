@@ -1329,6 +1329,74 @@ h3 { font-size: clamp(1.25rem, 2vw, 1.6rem); }
   .form-actions-fixed { right: 20px; bottom: 16px; }
 }
 
+/* ---------- TABLE TOOLBAR ---------- */
+.table-toolbar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap; margin-bottom: 16px;
+}
+.table-toolbar-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+/* ---------- EXPORT DROPDOWN ---------- */
+.export-dropdown { position: relative; }
+.export-menu {
+  position: absolute; top: calc(100% + 6px); right: 0; z-index: 60;
+  background: var(--surface-2); border: 1px solid var(--line);
+  border-radius: var(--radius-sm); min-width: 170px; box-shadow: var(--shadow-2); padding: 4px 0;
+}
+.export-menu button {
+  display: flex; align-items: center; gap: 9px; padding: 10px 14px;
+  width: 100%; font-size: 0.88rem; color: var(--text-soft); transition: 0.15s; border-radius: 0;
+  text-align: left;
+}
+.export-menu button:hover { background: var(--surface-3); color: var(--text); }
+
+/* ---------- ICON ROW BUTTONS ---------- */
+.row-btn-icon {
+  width: 32px; height: 32px; border-radius: 8px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--text-soft);
+  transition: 0.2s;
+}
+.row-btn-icon:hover { background: var(--surface-3); color: var(--text); }
+.row-btn-icon--danger { border-color: rgba(255,90,96,0.3); color: var(--danger); }
+.row-btn-icon--danger:hover { background: rgba(255,90,96,0.15); border-color: var(--danger); }
+
+/* ---------- PAGINATION ---------- */
+.pagination {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 0 4px; flex-wrap: wrap; gap: 12px;
+  border-top: 1px solid var(--line-soft); margin-top: 12px;
+}
+.pagination-btns { display: flex; align-items: center; gap: 4px; }
+.page-btn {
+  min-width: 34px; height: 34px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 8px; border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--text-soft);
+  font-size: 0.85rem; transition: 0.2s; padding: 0 8px;
+}
+.page-btn:hover:not(:disabled) { background: var(--surface-3); color: var(--text); }
+.page-btn.is-current { background: var(--red); border-color: var(--red); color: #fff; font-weight: 600; }
+.page-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.pagination-info { font-size: 0.82rem; color: var(--text-mute); }
+.page-size-select {
+  height: 32px; padding: 0 8px; border-radius: 8px;
+  border: 1px solid var(--line); background: var(--surface-2);
+  color: var(--text-soft); font-size: 0.85rem; cursor: pointer;
+}
+
+/* ---------- MODAL ACTIONS (alinhados à direita) ---------- */
+.modal-actions {
+  display: flex; gap: 10px; flex-wrap: wrap;
+  justify-content: flex-end; margin-top: 24px;
+}
+
+/* ---------- SMALL BTN VARIANT ---------- */
+.btn--sm {
+  padding: 7px 14px; font-size: 0.82rem;
+  display: inline-flex; align-items: center; gap: 7px;
+}
+
 /* ---------- COMBOBOX ---------- */
 .combobox { position: relative; }
 .combobox input { width: 100%; }

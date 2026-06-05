@@ -46,6 +46,11 @@ export default async function RootLayout({
 
   return (
     <html lang="pt-BR" className={`${brandFont.variable} ${bodyFont.variable}`}>
+      <head>
+        {settings.google_site_verification && (
+          <meta name="google-site-verification" content={settings.google_site_verification} />
+        )}
+      </head>
       <body>
         <SettingsProvider settings={settings}>
           <CartProvider>

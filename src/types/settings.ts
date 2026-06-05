@@ -3,6 +3,7 @@ export type SiteSettings = {
   whatsapp_secondary: string;
   ga_measurement_id: string;
   meta_pixel_id: string;
+  google_site_verification: string;
   business_hours_weekdays: string;
   business_hours_saturday: string;
   business_hours_sunday: string;

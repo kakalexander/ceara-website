@@ -6,6 +6,7 @@ const DEFAULTS: SiteSettings = {
   whatsapp_secondary: process.env.NEXT_PUBLIC_WHATSAPP_SECONDARY ?? "556230986879",
   ga_measurement_id: "",
   meta_pixel_id: "",
+  google_site_verification: "",
   business_hours_weekdays: "Seg–Sex: 08h às 18h",
   business_hours_saturday: "Sábado: 08h às 12h",
   business_hours_sunday: "Domingo: fechado",

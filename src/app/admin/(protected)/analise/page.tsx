@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 type Settings = {
   ga_measurement_id?: string;
   meta_pixel_id?: string;
+  google_site_verification?: string;
 };
 
 type SaveState = "idle" | "saving" | "saved" | "error";
@@ -29,6 +30,7 @@ export default function AnalysePage(): JSX.Element {
   const [settings, setSettings] = useState<Settings>({});
   const [gaId, setGaId] = useState("");
   const [pixelId, setPixelId] = useState("");
+  const [searchConsoleTag, setSearchConsoleTag] = useState("");
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -39,27 +41,24 @@ export default function AnalysePage(): JSX.Element {
         setSettings(data);
         setGaId(data.ga_measurement_id ?? "");
         setPixelId(data.meta_pixel_id ?? "");
+        setSearchConsoleTag(data.google_site_verification ?? "");
       })
       .catch(() => setLoadError("Não foi possível carregar as configurações."));
   }, []);
 
-  async function saveSetting(key: string, value: string): Promise<boolean> {
-    const res = await fetch("/api/admin/settings", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ key, value })
-    });
-    return res.ok;
-  }
-
   async function handleSave(): Promise<void> {
     setSaveState("saving");
-    const results = await Promise.all([
-      saveSetting("ga_measurement_id", gaId.trim()),
-      saveSetting("meta_pixel_id", pixelId.trim())
-    ]);
-    if (results.every(Boolean)) {
-      setSettings({ ga_measurement_id: gaId.trim(), meta_pixel_id: pixelId.trim() });
+    const res = await fetch("/api/admin/settings", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ga_measurement_id: gaId.trim(),
+        meta_pixel_id: pixelId.trim(),
+        google_site_verification: searchConsoleTag.trim()
+      })
+    });
+    if (res.ok) {
+      setSettings({ ga_measurement_id: gaId.trim(), meta_pixel_id: pixelId.trim(), google_site_verification: searchConsoleTag.trim() });
       setSaveState("saved");
       setTimeout(() => setSaveState("idle"), 3000);
     } else {
@@ -69,6 +68,7 @@ export default function AnalysePage(): JSX.Element {
 
   const gaActive = Boolean(settings.ga_measurement_id);
   const pixelActive = Boolean(settings.meta_pixel_id);
+  const searchConsoleActive = Boolean(settings.google_site_verification);
 
   return (
     <>
@@ -187,6 +187,73 @@ export default function AnalysePage(): JSX.Element {
         </div>
       </div>
 
+      {/* Google Search Console */}
+      <div className="admin-card">
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6 }}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
+            <circle cx="12" cy="12" r="9" fill="#4285F4" opacity=".15" />
+            <path d="M15.5 9.5a5 5 0 11-7 7L5 20l3.5-3.5a5 5 0 017-7z" stroke="#4285F4" strokeWidth="1.5" fill="none"/>
+            <circle cx="13" cy="11" r="2" fill="#4285F4"/>
+          </svg>
+          <h2 style={{ margin: 0 }}>Google Search Console</h2>
+          <span style={{ marginLeft: "auto", fontSize: "0.82rem", color: searchConsoleActive ? "var(--success)" : "var(--text-mute)" }}>
+            <StatusDot active={searchConsoleActive} />
+            {searchConsoleActive ? "Verificado" : "Não verificado"}
+          </span>
+        </div>
+        <p className="muted" style={{ marginBottom: 20 }}>
+          Monitora como o site aparece nos resultados do Google: palavras-chave, cliques, erros de indexação e cobertura de páginas.
+        </p>
+
+        <div className="field field--simple" style={{ maxWidth: 500, marginBottom: 14 }}>
+          <label htmlFor="gsc-tag">Código de verificação HTML</label>
+          <input
+            id="gsc-tag"
+            type="text"
+            placeholder="Ex: abc123xyz456..."
+            value={searchConsoleTag}
+            onChange={(e) => setSearchConsoleTag(e.target.value)}
+            spellCheck={false}
+          />
+        </div>
+
+        <div style={{ padding: "12px 16px", background: "rgba(255,255,255,0.03)", borderRadius: 8, border: "1px solid var(--line-soft)", fontSize: "0.85rem", color: "var(--text-soft)", lineHeight: 1.6 }}>
+          <strong style={{ color: "var(--text)" }}>Como verificar:</strong> acesse{" "}
+          <strong>search.google.com/search-console</strong> → Adicionar propriedade → Prefixo de URL → Método &ldquo;Tag HTML&rdquo;.
+          Copie apenas o conteúdo do atributo <code style={{ fontFamily: "monospace" }}>content=&quot;...&quot;</code> e cole acima.
+          Após salvar, clique em &ldquo;Verificar&rdquo; no Search Console.
+        </div>
+      </div>
+
+      {/* Checklist SEO / Performance */}
+      <div className="admin-card">
+        <h2 style={{ marginBottom: 20 }}>Status de SEO e Performance</h2>
+        <p className="muted" style={{ marginBottom: 20 }}>Recursos ativos para melhor desempenho no Google e nos navegadores.</p>
+        {[
+          { label: "Otimização de imagens", detail: "Sharp + WebP/AVIF automático para carregamento mais rápido", ok: true },
+          { label: "Cache ISR nas páginas públicas", detail: "Revalidação a cada 60s — serve HTML estático sem consulta ao banco", ok: true },
+          { label: "Security headers", detail: "X-Frame-Options, CSP, X-Content-Type-Options, Referrer-Policy", ok: true },
+          { label: "Sitemap dinâmico", detail: "/sitemap.xml com todas as páginas de produto, atualizado automaticamente", ok: true },
+          { label: "Metadados Open Graph", detail: "Título e imagem otimizados para compartilhamento em redes sociais", ok: true },
+          { label: "Página individual por produto", detail: "URLs únicas /produtos/[slug] com título e descrição próprios por produto", ok: true },
+          { label: "Google Analytics 4", detail: "Rastreamento de tráfego e comportamento", ok: gaActive },
+          { label: "Meta Pixel", detail: "Rastreamento de conversões para campanhas no Facebook/Instagram", ok: pixelActive },
+          { label: "Google Search Console", detail: "Monitoramento de indexação e performance nos resultados de busca", ok: searchConsoleActive }
+        ].map((item) => (
+          <div key={item.label} style={{ display: "flex", alignItems: "flex-start", gap: 14, padding: "12px 0", borderBottom: "1px solid var(--line-soft)" }}>
+            <span style={{ width: 20, height: 20, borderRadius: "50%", background: item.ok ? "var(--success)" : "var(--surface-3)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>
+              {item.ok
+                ? <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" aria-hidden><path d="M20 6L9 17l-5-5"/></svg>
+                : <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--text-mute)" strokeWidth="3" aria-hidden><path d="M18 6L6 18M6 6l12 12"/></svg>}
+            </span>
+            <div>
+              <strong style={{ fontSize: "0.92rem", color: "var(--text)" }}>{item.label}</strong>
+              <p style={{ margin: 0, fontSize: "0.82rem", color: "var(--text-mute)", marginTop: 2 }}>{item.detail}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
       {/* Status e ações */}
       {saveState === "error" && (
         <div className="admin-card" style={{ borderColor: "var(--danger)", color: "var(--danger)" }}>
@@ -194,15 +261,15 @@ export default function AnalysePage(): JSX.Element {
         </div>
       )}
 
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 16,
-          flexWrap: "wrap",
-          paddingBottom: 40
-        }}
-      >
+      <div style={{ paddingBottom: 100 }} />
+
+      <div className="form-actions-fixed">
+        {saveState === "error" && (
+          <span style={{ color: "var(--danger)", fontSize: "0.85rem" }}>Erro ao salvar.</span>
+        )}
+        {saveState === "saved" && (
+          <span style={{ color: "var(--success)", fontSize: "0.85rem" }}>✓ Salvo!</span>
+        )}
         <button
           className="btn"
           type="button"
@@ -211,12 +278,6 @@ export default function AnalysePage(): JSX.Element {
         >
           {saveState === "saving" ? "Salvando..." : "Salvar configurações"}
         </button>
-
-        {saveState === "saved" && (
-          <span style={{ color: "var(--success)", fontSize: "0.9rem" }}>
-            ✓ Configurações salvas com sucesso.
-          </span>
-        )}
       </div>
     </>
   );

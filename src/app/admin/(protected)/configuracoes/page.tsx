@@ -219,13 +219,16 @@ export default function ConfiguracoesPage(): JSX.Element {
         </div>
       </div>
 
-      {saveState === "error" && (
-        <div className="admin-card" style={{ borderColor: "var(--danger)", color: "var(--danger)" }}>
-          <strong>Erro ao salvar.</strong> Verifique a conexão e tente novamente.
-        </div>
-      )}
+      <div style={{ paddingBottom: 100 }} />
 
-      <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap", paddingBottom: 56 }}>
+      {/* Botão fixo */}
+      <div className="form-actions-fixed">
+        {saveState === "error" && (
+          <span style={{ color: "var(--danger)", fontSize: "0.85rem", marginRight: 8 }}>Erro ao salvar.</span>
+        )}
+        {saveState === "saved" && (
+          <span style={{ color: "var(--success)", fontSize: "0.85rem" }}>✓ Salvo!</span>
+        )}
         <button
           className="btn"
           type="button"
@@ -234,12 +237,6 @@ export default function ConfiguracoesPage(): JSX.Element {
         >
           {saveState === "saving" ? "Salvando..." : "Salvar configurações"}
         </button>
-
-        {saveState === "saved" && (
-          <span style={{ color: "var(--success)", fontSize: "0.9rem" }}>
-            ✓ Configurações salvas com sucesso.
-          </span>
-        )}
       </div>
     </>
   );
