@@ -32,23 +32,28 @@ export function AdminModal({
 
   return (
     <div
-      className="modal-overlay"
+      className="modal-backdrop"
       ref={overlayRef}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="admin-modal-title"
       onClick={(e) => { if (e.target === overlayRef.current) onClose(); }}
     >
-      <div className="modal-box" style={{ maxWidth }}>
+      <div className="modal" style={{ maxWidth }}>
         <div className="modal-header">
-          <h3 style={{ margin: 0, fontSize: "1rem" }}>{title}</h3>
+          <h2 id="admin-modal-title" className="modal-title">{title}</h2>
           <button
-            className="btn-ghost"
+            className="modal-close"
             onClick={onClose}
-            aria-label="Fechar modal"
-            style={{ marginLeft: "auto", padding: "4px 8px", fontSize: "1.2rem", lineHeight: 1 }}
+            type="button"
+            aria-label="Fechar"
           >
-            ×
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
+              <path d="M18 6L6 18M6 6l12 12"/>
+            </svg>
           </button>
         </div>
-        <div style={{ padding: "20px 24px" }}>{children}</div>
+        <div className="modal-body">{children}</div>
       </div>
     </div>
   );
