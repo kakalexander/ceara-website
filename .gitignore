@@ -20,3 +20,9 @@ public/uploads/*
 .claude.bak.*
 .esteira-tmp/
 .esteira-gitlab.json
+# test-results/ do Playwright é efêmero, MAS test-results/screenshots/ é evidência
+# VERSIONADA do smoke visual (entra no PR). O par "*/!subdir" re-inclui a subpasta;
+# por isso uma exclusão hard "test-results/" é convertida em "test-results/*" no install.
+test-results/*
+!test-results/screenshots/
+# /esteira-v3 (fim do bloco gerenciado)
